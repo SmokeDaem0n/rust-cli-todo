@@ -2,13 +2,18 @@ use std::io;
 
 enum TaskStatus {
     ToDo,
-    InProgress,
     Completed,
 }
 struct Task {
     id: usize,
     title: String,
     status: TaskStatus,
+}
+
+impl Task {
+    fn mark_as_completed(&mut self) {
+        self.status = TaskStatus::Completed;
+    }
 }
 
 const SEPARATOR: &str = "--------------------------------";
@@ -44,8 +49,7 @@ fn list_tasks(task_list: &Vec<Task>) {
     println!("{SEPARATOR}");
     for task in task_list {
         let status = match &task.status {
-            TaskStatus::ToDo => "not started",
-            TaskStatus::InProgress => "in progress",
+            TaskStatus::ToDo => "work in progress",
             TaskStatus::Completed => "completed",
         };
         println!("{}.{},{}", task.id, task.title, status);
@@ -69,9 +73,24 @@ fn delete_task(task_list: &mut Vec<Task>) {
     if task_to_delete >= task_list.len() {
         println!("Invalid task")
     } else {
-        task_list.remove(task_to_delete);
+        task_list.remove(task_to_delete - 1);
         println!("Task removed successfully");
         println!("{SEPARATOR}");
+    }
+}
+
+fn complete_task(task_list: &mut Vec<Task>) {
+    //reference has to be mutable because im getting a mutable reference TO A TASK via get_mut????
+    let mut input = String::new();
+
+    println!("Which task did you complete?");
+    list_tasks(task_list);
+
+    io::stdin().read_line(&mut input).expect("Cant read input");
+    let completed_task: usize = input.trim().parse().expect("Cant parse input");
+
+    if let Some(task) = task_list.get_mut(completed_task - 1) {
+        task.mark_as_completed();
     }
 }
 fn main() {
@@ -101,8 +120,8 @@ fn main() {
             1 => add_task(&mut task_list),
             2 => list_tasks(&task_list),
             3 => delete_task(&mut task_list),
-            // 4 => complete_task(),
-            // 5 => break,
+            4 => complete_task(&mut task_list),
+            5 => break,
             _ => println!("Invalid option"),
         }
     }
