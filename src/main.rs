@@ -1,6 +1,6 @@
-use std::{io, iter::Enumerate};
+use std::io;
 
-enum Task_status {
+enum TaskStatus {
     ToDo,
     InProgress,
     Completed,
@@ -8,7 +8,7 @@ enum Task_status {
 struct Task {
     id: usize,
     title: String,
-    status: Task_status,
+    status: TaskStatus,
 }
 
 const SEPARATOR: &str = "--------------------------------";
@@ -16,7 +16,7 @@ const SEPARATOR: &str = "--------------------------------";
 fn add_task(task_list: &mut Vec<Task>) {
     let mut task_name = String::new();
     let task_id = task_list.len() + 1;
-    let task_status = Task_status::ToDo;
+    let task_status = TaskStatus::ToDo;
 
     println!("{SEPARATOR}");
     println!("Enter your task: ");
@@ -44,13 +44,35 @@ fn list_tasks(task_list: &Vec<Task>) {
     println!("{SEPARATOR}");
     for task in task_list {
         let status = match &task.status {
-            Task_status::ToDo => "not started",
-            Task_status::InProgress => "in progress",
-            Task_status::Completed => "completed",
+            TaskStatus::ToDo => "not started",
+            TaskStatus::InProgress => "in progress",
+            TaskStatus::Completed => "completed",
         };
         println!("{}.{},{}", task.id, task.title, status);
     }
     println!("{SEPARATOR}");
+}
+
+fn delete_task(task_list: &mut Vec<Task>) {
+    let mut input = String::new();
+
+    println!("Which task do you want to delete? (Enter number)");
+
+    list_tasks(task_list);
+
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Error reading input");
+
+    let task_to_delete: usize = input.trim().parse().expect("Cannot parse val");
+
+    if task_to_delete >= task_list.len() {
+        println!("Invalid task")
+    } else {
+        task_list.remove(task_to_delete);
+        println!("Task removed successfully");
+        println!("{SEPARATOR}");
+    }
 }
 fn main() {
     let mut task_list: Vec<Task> = Vec::new();
@@ -78,7 +100,7 @@ fn main() {
         match user_choice {
             1 => add_task(&mut task_list),
             2 => list_tasks(&task_list),
-            // 3 => delete_task(),
+            3 => delete_task(&mut task_list),
             // 4 => complete_task(),
             // 5 => break,
             _ => println!("Invalid option"),
