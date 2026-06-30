@@ -18,31 +18,36 @@ impl Task {
 
 const SEPARATOR: &str = "--------------------------------";
 
-fn add_task(task_list: &mut Vec<Task>) {
-    let mut task_name = String::new();
-    let task_id = task_list.len() + 1;
-    let task_status = TaskStatus::ToDo;
-
+fn add_task(task_list: &mut Vec<Task>, next_id: &mut usize) {
     println!("{SEPARATOR}");
-    println!("Enter your task: ");
-    io::stdin()
-        .read_line(&mut task_name)
-        .expect("Error reading input");
 
-    task_name = task_name.trim().to_string();
+    loop {
+        let mut task_name = String::new();
+        let task_id = *next_id;
+        let task_status = TaskStatus::ToDo;
 
-    let task = Task {
-        id: task_id,
-        title: task_name,
-        status: task_status,
-    };
+        println!("Enter your task: (or q to quit)");
+        io::stdin()
+            .read_line(&mut task_name)
+            .expect("Error reading input");
 
-    task_list.push(task);
-    if let Some(task) = task_list.last() {
-        println!("Task added: {}", task.title); // calling the get method returns an option not an actual task
-        // must deal with the outcome of Some(val) or None
+        task_name = task_name.trim().to_string();
+
+        if task_name == "q" {
+            println!("Tasks added:");
+            list_tasks(task_list);
+            break;
+        }
+
+        let task = Task {
+            id: task_id,
+            title: task_name,
+            status: task_status,
+        };
+
+        task_list.push(task);
+        *next_id += 1;
     }
-    println!("{SEPARATOR}");
 }
 
 fn list_tasks(task_list: &Vec<Task>) {
@@ -58,43 +63,72 @@ fn list_tasks(task_list: &Vec<Task>) {
 }
 
 fn delete_task(task_list: &mut Vec<Task>) {
-    let mut input = String::new();
+    loop {
+        let mut input = String::new();
 
-    println!("Which task do you want to delete? (Enter number)");
+        println!("Which task do you want to delete? (Enter number or press q to quit)");
 
-    list_tasks(task_list);
+        list_tasks(task_list);
 
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Error reading input");
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Error reading input");
 
-    let task_to_delete: usize = input.trim().parse().expect("Cannot parse val");
+        if input.trim() == "q" {
+            break;
+        }
 
-    if task_to_delete >= task_list.len() {
-        println!("Invalid task")
-    } else {
-        task_list.remove(task_to_delete - 1);
-        println!("Task removed successfully");
-        println!("{SEPARATOR}");
+        let task_to_delete: usize = match input.trim().parse() {
+            Ok(num) => num,
+            Err(_) => {
+                println!("Please enter a valid number!");
+                continue;
+            }
+        };
+
+        if let Some(index) = task_list.iter().position(|t| t.id == task_to_delete) {
+            task_list.remove(index);
+        } else {
+            println!("Task cannot be removed, wrong number");
+        }
     }
 }
 
 fn complete_task(task_list: &mut Vec<Task>) {
     //reference has to be mutable because im getting a mutable reference TO A TASK via get_mut????
-    let mut input = String::new();
+    loop {
+        let mut input = String::new();
 
-    println!("Which task did you complete?");
-    list_tasks(task_list);
+        println!("Which task did you complete? (press q to quit)");
+        list_tasks(task_list);
 
-    io::stdin().read_line(&mut input).expect("Cant read input");
-    let completed_task: usize = input.trim().parse().expect("Cant parse input");
+        io::stdin().read_line(&mut input).expect("Cant read input");
 
-    if let Some(task) = task_list.get_mut(completed_task - 1) {
-        task.mark_as_completed();
+        if input.trim() == "q" {
+            break;
+        }
+
+        let completed_task: usize = match input.trim().parse() {
+            Ok(num) => num,
+            Err(_) => {
+                println!("Task cant be found. Enter valid number");
+                continue;
+            }
+        };
+
+        if let Some(index) = task_list.iter().position(|t| t.id == completed_task) {
+            if let Some(task) = task_list.get_mut(index) {
+                task.mark_as_completed();
+                println!("Marked {} as completed", task.title);
+            }
+        } else {
+            println!("Error deleting task");
+        }
     }
 }
 fn main() {
     let mut task_list: Vec<Task> = Vec::new();
+    let mut next_id = 1;
     let options: [&str; 5] = [
         "Add Task",
         "List Tasks",
@@ -117,7 +151,7 @@ fn main() {
         let user_choice: i32 = input.trim().parse().expect("Input couldnt be validated");
 
         match user_choice {
-            1 => add_task(&mut task_list),
+            1 => add_task(&mut task_list, &mut next_id),
             2 => list_tasks(&task_list),
             3 => delete_task(&mut task_list),
             4 => complete_task(&mut task_list),
