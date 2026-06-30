@@ -148,7 +148,13 @@ fn main() {
             .read_line(&mut input)
             .expect("Please enter a number that is in the list");
 
-        let user_choice: i32 = input.trim().parse().expect("Input couldnt be validated");
+        let user_choice: i32 = match input.trim().parse() {
+            Ok(num) => num,
+            Err(_) => {
+                println!("Enter valid choice");
+                continue;
+            }
+        };
 
         match user_choice {
             1 => add_task(&mut task_list, &mut next_id),
