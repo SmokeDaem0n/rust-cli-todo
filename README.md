@@ -36,8 +36,8 @@ Building this project helped me become familiar with several core Rust concepts:
 Clone the repository:
 
 ```bash
-git clone <repository-url>
-cd <repository-name>
+git clone [<repository-url>](https://github.com/SmokeDaem0n/rust-cli-todo.git)
+cd rust-cli-todo
 ```
 
 Run the application:
