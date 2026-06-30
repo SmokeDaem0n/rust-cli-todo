@@ -116,11 +116,9 @@ fn complete_task(task_list: &mut Vec<Task>) {
             }
         };
 
-        if let Some(index) = task_list.iter().position(|t| t.id == completed_task) {
-            if let Some(task) = task_list.get_mut(index) {
-                task.mark_as_completed();
-                println!("Marked {} as completed", task.title);
-            }
+        if let Some(task) = task_list.iter_mut().find(|t| t.id == completed_task) {
+            task.mark_as_completed();
+            println!("Marked {} as completed", task.title);
         } else {
             println!("Error deleting task");
         }
